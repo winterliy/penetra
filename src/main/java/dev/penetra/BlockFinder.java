@@ -20,8 +20,10 @@ public final class BlockFinder {
     private static final int MAX_RESULTS = 1024;
     private static final int CHUNKS_PER_TICK = 6;
     private static Search activeSearch;
+    private static String lastBlockId;
+    private static int validationTicks;
 
-    public enum StartResult { STARTED, NO_WORLD, INVALID_BLOCK }
+    public enum StartResult { STARTED, NO_WORLD, INVALID_BLOCK, NO_PREVIOUS_SEARCH }
 
     private record ChunkCoordinate(int x, int z) {}
 
@@ -70,8 +72,14 @@ public final class BlockFinder {
         }
 
         FindState.clear();
+        lastBlockId = id.toString();
         activeSearch = new Search(level, target, id.toString(), coordinates);
         return StartResult.STARTED;
+    }
+
+    public static StartResult reload() {
+        if (lastBlockId == null) return StartResult.NO_PREVIOUS_SEARCH;
+        return start(lastBlockId);
     }
 
     public static void cancel() {
@@ -81,9 +89,13 @@ public final class BlockFinder {
     /** Processes a small batch on the client tick; never requests an unloaded chunk. */
     public static void tick() {
         Search search = activeSearch;
+        Minecraft minecraft = Minecraft.getInstance();
+        if (minecraft.level != null && ++validationTicks >= 10) {
+            FindState.removeDestroyed(minecraft.level);
+            validationTicks = 0;
+        }
         if (search == null) return;
 
-        Minecraft minecraft = Minecraft.getInstance();
         if (minecraft.level != search.level || minecraft.player == null) {
             activeSearch = null;
             FindState.clear();

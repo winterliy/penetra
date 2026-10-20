@@ -16,9 +16,24 @@ public abstract class ClientPacketListenerMixin {
     private void penetra$handleFind(String message, CallbackInfo ci) {
         boolean findCommand = message.equals("$find") || message.startsWith("$find ") || message.startsWith("$find\t");
         boolean colorCommand = message.equals("$color") || message.startsWith("$color ") || message.startsWith("$color\t");
-        if (!findCommand && !colorCommand) return;
+        boolean showOnCommand = message.equals("$showon");
+        boolean showOffCommand = message.equals("$showoff");
+        boolean reloadCommand = message.equals("$reload");
+        if (!findCommand && !colorCommand && !showOnCommand && !showOffCommand && !reloadCommand) return;
         String[] args = message.trim().split("\\s+");
-        if (colorCommand) {
+        if (reloadCommand) {
+            BlockFinder.StartResult result = BlockFinder.reload();
+            if (result == BlockFinder.StartResult.NO_PREVIOUS_SEARCH) report("[Penetra] 다시 검색할 블록이 없습니다. 먼저 $find <block>을 사용하세요.");
+            else if (result == BlockFinder.StartResult.NO_WORLD) report("[Penetra] 월드에 접속한 뒤 사용하세요.");
+            else if (result == BlockFinder.StartResult.STARTED) report("[Penetra] 마지막 검색을 새로고침합니다.");
+            else report("[Penetra] 마지막 검색의 블록 ID를 확인할 수 없습니다.");
+        } else if (showOnCommand) {
+            FindState.setOutlinesEnabled(true);
+            report("[Penetra] 아웃라인 표시를 켰습니다.");
+        } else if (showOffCommand) {
+            FindState.setOutlinesEnabled(false);
+            report("[Penetra] 아웃라인 표시를 껐습니다.");
+        } else if (colorCommand) {
             applyColor(args);
         } else if (args.length == 2 && args[1].equalsIgnoreCase("clear")) {
             BlockFinder.cancel();

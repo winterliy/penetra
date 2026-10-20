@@ -53,7 +53,8 @@ public final class PenetraRenderer {
 
     public static void render(CameraRenderState cameraState) {
         Minecraft minecraft = Minecraft.getInstance();
-        if (minecraft.level == null || !FindState.belongsTo(minecraft.level) || FindState.positions().isEmpty()) return;
+        if (minecraft.level == null || !FindState.outlinesEnabled()
+                || !FindState.belongsTo(minecraft.level) || FindState.positions().isEmpty()) return;
 
         int rgb = FindState.rgb();
         float red = ((rgb >> 16) & 0xFF) / 255.0F;
