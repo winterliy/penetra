@@ -1,0 +1,18 @@
+{
+  "schemaVersion": 1,
+  "id": "penetra",
+  "version": "${version}",
+  "name": "Penetra",
+  "description": "Search for blocks in already-loaded client chunks.",
+  "environment": "client",
+  "entrypoints": {
+    "client": ["dev.penetra.PenetraClient"]
+  },
+  "license": "MIT",
+  "mixins": ["penetra.mixins.json"],
+  "depends": {
+    "fabricloader": ">=0.19.5",
+    "minecraft": "~26.3",
+    "java": ">=25"
+  }
+}

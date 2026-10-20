@@ -1,0 +1,7 @@
+.DS_Store
+.gradle/
+**/build/
+fabric/run/
+run/
+.idea/
+*.iml

@@ -1,0 +1,40 @@
+base { archivesName = rootProject.archives_base_name + '-fabric' }
+
+unimined.minecraft {
+    fabric { loader rootProject.fabric_loader_version }
+}
+
+def runJavaVersion = (findProperty('run_java_version') ?: rootProject.java_version).toString().toInteger()
+tasks.configureEach {
+    if (name == 'runClient') {
+        javaLauncher = javaToolchains.launcherFor {
+            languageVersion = JavaLanguageVersion.of(runJavaVersion)
+        }
+    }
+}
+
+configurations {
+    common
+    compileClasspath.extendsFrom common
+    runtimeClasspath.extendsFrom common
+}
+
+dependencies {
+    common project(path: ':', configuration: 'default')
+}
+
+processResources {
+    inputs.property 'version', project.version
+    filesMatching('fabric.mod.json') { expand version: project.version }
+}
+
+jar {
+    from rootProject.sourceSets.main.output
+    archiveClassifier.set 'dev'
+}
+
+remapJar {
+    inputFile.set jar.archiveFile
+    dependsOn jar
+    archiveClassifier.set null
+}

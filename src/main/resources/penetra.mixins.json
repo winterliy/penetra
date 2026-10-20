@@ -1,0 +1,12 @@
+{
+  "required": true,
+  "package": "dev.penetra.mixin",
+  "compatibilityLevel": "JAVA_17",
+  "client": [
+    "ClientPacketListenerMixin",
+    "LevelRendererMixin",
+    "RenderPipelinesMixin",
+    "RenderTypeMixin"
+  ],
+  "injectors": { "defaultRequire": 1 }
+}
