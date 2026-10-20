@@ -1,10 +1,10 @@
-# Penetra 1.0
+# Penetra 1.1
 
 Minecraft 26.3 Fabric client mod. `$find <namespace:block>` searches already-loaded client chunks inside the configured render-distance square; for example, `$find minecraft:diamond_ore` (the `minecraft:` prefix may be omitted). It does not trigger chunk loads. Matches are capped at 1,024.
 
 The loaded-chunk scanning approach was informed by Baritone 26.3's `WorldScanner`; no Baritone source file is copied into this project. Baritone: https://github.com/cabaletta/baritone (LGPL-3.0-or-later).
 
-Build with Java 25 or later using `./gradlew :fabric:remapJar`. The mod JAR is written to `fabric/build/libs/penetra-fabric-1.0.0.jar`.
+Build with Java 25 or later using `./gradlew :fabric:remapJar`. The mod JAR is written to `fabric/build/libs/penetra-fabric-1.1.0.jar`.
 
 To launch the development client on this machine's Java 27 runtime, use `./gradlew :fabric:runClient -Prun_java_version=27`. A regular installed Minecraft 26.3 client must run Java 25 or newer.
 
