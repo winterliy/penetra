@@ -5,6 +5,7 @@ import net.minecraft.client.multiplayer.ClientChunkCache;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.Identifier;
+import net.minecraft.world.level.block.state.BlockState;
 
 import java.util.List;
 
@@ -52,5 +53,24 @@ public final class FindState {
                 })
                 .toList();
         if (valid.size() != current.size()) positions = valid;
+    }
+
+    public static void onBlockChanged(ClientLevel currentLevel, BlockPos pos, BlockState newState) {
+        String name = blockName;
+        if (level != currentLevel || name == null) return;
+        Identifier id = Identifier.tryParse(name);
+        if (id == null) return;
+        var target = BuiltInRegistries.BLOCK.getOptional(id).orElse(null);
+        if (target == null) return;
+
+        List<BlockPos> current = positions;
+        boolean alreadyTracked = current.contains(pos);
+        if (newState.is(target) && !alreadyTracked && current.size() < 1024) {
+            java.util.ArrayList<BlockPos> updated = new java.util.ArrayList<>(current);
+            updated.add(pos.immutable());
+            positions = List.copyOf(updated);
+        } else if (!newState.is(target) && alreadyTracked) {
+            positions = current.stream().filter(found -> !found.equals(pos)).toList();
+        }
     }
 }

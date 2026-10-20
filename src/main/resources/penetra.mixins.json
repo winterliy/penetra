@@ -5,6 +5,7 @@
   "client": [
     "ClientPacketListenerMixin",
     "ChatScreenMixin",
+    "ClientLevelMixin",
     "LevelRendererMixin",
     "RenderPipelinesMixin",
     "RenderTypeMixin"
