@@ -2,6 +2,7 @@ package dev.penetra.mixin;
 
 import dev.penetra.BlockFinder;
 import dev.penetra.FindState;
+import dev.penetra.PenetraFeatures;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.network.chat.Component;
@@ -19,7 +20,13 @@ public abstract class ClientPacketListenerMixin {
         boolean showOnCommand = message.equals("$showon");
         boolean showOffCommand = message.equals("$showoff");
         boolean reloadCommand = message.equals("$reload");
-        if (!findCommand && !colorCommand && !showOnCommand && !showOffCommand && !reloadCommand) return;
+        boolean helpCommand = message.equals("$help");
+        if (!findCommand && !colorCommand && !showOnCommand && !showOffCommand && !reloadCommand && !helpCommand) return;
+        if (helpCommand) {
+            showHelp();
+            ci.cancel();
+            return;
+        }
         String[] args = message.trim().split("\\s+");
         if (reloadCommand) {
             BlockFinder.StartResult result = BlockFinder.reload();
@@ -64,6 +71,22 @@ public abstract class ClientPacketListenerMixin {
         report("[Penetra] 아웃라인 색상을 #" + hex.toUpperCase(java.util.Locale.ROOT) + "로 변경했습니다.");
     }
 
+    private static void showHelp() {
+        String[] lines = {
+                "[Penetra] 키맵:",
+                "Y KillAura | U MultiAura | [ X-Ray | ] Freecam",
+                "G AutoFish | H AutoFarm | J CameraDistance | ; AutoAim | N BowAimbot",
+                "[Penetra] 명령어:",
+                "$find <block_id> — 블록 찾기 및 아웃라인 표시",
+                "$find clear — 검색 결과 및 아웃라인 지우기",
+                "$color <RRGGBB> — 아웃라인 색상 변경",
+                "$showon / $showoff — 아웃라인 표시 켜기 / 끄기",
+                "$reload — 마지막 블록 검색 다시 실행",
+                "$help — 이 도움말 표시"
+        };
+        for (String line : lines) report(line);
+    }
+
     private static void report(String message) {
         Minecraft.getInstance().gui.chatListener().handleSystemMessage(Component.literal(message), false);
     }
@@ -71,5 +94,6 @@ public abstract class ClientPacketListenerMixin {
     @Inject(method = "tick", at = @At("TAIL"))
     private void penetra$advanceSearch(CallbackInfo ci) {
         BlockFinder.tick();
+        PenetraFeatures.tick();
     }
 }

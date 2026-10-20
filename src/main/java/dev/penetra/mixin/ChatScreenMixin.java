@@ -52,6 +52,7 @@ public abstract class ChatScreenMixin {
             addIfMatches(options, normalized, "$showon  — show outlines");
             addIfMatches(options, normalized, "$showoff  — hide outlines");
             addIfMatches(options, normalized, "$reload  — repeat last search");
+            addIfMatches(options, normalized, "$help  — show Penetra keymap and commands");
             return options;
         }
 
@@ -88,6 +89,10 @@ public abstract class ChatScreenMixin {
         }
         if (normalized.matches("\\$(c|co|col|colo|color)?")) {
             addIfMatches(options, normalized, "$color <RRGGBB>  — set outline color");
+            return options;
+        }
+        if (normalized.matches("\\$(h|he|hel|help)?")) {
+            addIfMatches(options, normalized, "$help  — show Penetra keymap and commands");
             return options;
         }
         return options;

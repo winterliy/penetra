@@ -6,6 +6,9 @@
     "ClientPacketListenerMixin",
     "ChatScreenMixin",
     "ClientLevelMixin",
+    "KeyboardHandlerMixin",
+    "CameraRenderStateMixin",
+    "MinecraftMixin",
     "LevelRendererMixin",
     "RenderPipelinesMixin",
     "RenderTypeMixin"

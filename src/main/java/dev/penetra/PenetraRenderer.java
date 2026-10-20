@@ -53,8 +53,10 @@ public final class PenetraRenderer {
 
     public static void render(CameraRenderState cameraState) {
         Minecraft minecraft = Minecraft.getInstance();
-        if (minecraft.level == null || !FindState.outlinesEnabled()
-                || !FindState.belongsTo(minecraft.level) || FindState.positions().isEmpty()) return;
+        if (minecraft.level == null || !FindState.outlinesEnabled()) return;
+        boolean hasFindMarkers = FindState.belongsTo(minecraft.level) && !FindState.positions().isEmpty();
+        boolean hasXrayMarkers = !PenetraFeatures.xrayBlocks().isEmpty();
+        if (!hasFindMarkers && !hasXrayMarkers) return;
 
         int rgb = FindState.rgb();
         float red = ((rgb >> 16) & 0xFF) / 255.0F;
@@ -73,13 +75,22 @@ public final class PenetraRenderer {
         int centerZ = minecraft.player.blockPosition().getZ() >> 4;
         int renderDistance = minecraft.options.renderDistance().get();
         ClientChunkCache chunks = minecraft.level.getChunkSource();
-        for (var block : FindState.positions()) {
+        for (var block : hasFindMarkers ? FindState.positions() : java.util.List.<net.minecraft.core.BlockPos>of()) {
             int chunkX = block.getX() >> 4;
             int chunkZ = block.getZ() >> 4;
             if (Math.abs(chunkX - centerX) > renderDistance || Math.abs(chunkZ - centerZ) > renderDistance
                     || chunks.getChunk(chunkX, chunkZ, null, false) == null) continue;
             AABB box = new AABB(block).inflate(0.002);
             emitBox(vertices, pose, box, cameraX, cameraY, cameraZ, red, green, blue);
+        }
+
+        for (var block : PenetraFeatures.xrayBlocks()) {
+            int chunkX = block.getX() >> 4;
+            int chunkZ = block.getZ() >> 4;
+            if (Math.abs(chunkX - centerX) > renderDistance || Math.abs(chunkZ - centerZ) > renderDistance
+                    || chunks.getChunk(chunkX, chunkZ, null, false) == null) continue;
+            emitBox(vertices, pose, new AABB(block).inflate(0.002), cameraX, cameraY, cameraZ,
+                    1.0F, 0.66F, 0.12F);
         }
 
         VERTICES.upload();
