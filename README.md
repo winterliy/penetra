@@ -1,10 +1,10 @@
-# Penetra 2.0.3
+# Penetra 2.0.4
 
 Minecraft 26.3 Fabric client mod with Kotlin development enabled alongside the existing Java sources. New client initialization and hotkey routing use Kotlin; mixins remain Java because Fabric's Kotlin guidance does not support Kotlin mixin classes. `$find <namespace:block>` searches already-loaded client chunks inside the configured render-distance square; for example, `$find minecraft:diamond_ore` (the `minecraft:` prefix may be omitted). It does not trigger chunk loads. Matches are capped at 1,024.
 
 The loaded-chunk scanning approach was informed by Baritone 26.3's `WorldScanner`; no Baritone source file is copied into this project. Baritone: https://github.com/cabaletta/baritone (LGPL-3.0-or-later).
 
-Build with Java 25 or later using `./gradlew :fabric:remapJar`. The mod JAR is written to `fabric/build/libs/penetra-fabric-2.0.3.jar`. Fabric Language Kotlin is bundled in the mod JAR, so players do not need to install it separately.
+Build with Java 25 or later using `./gradlew :fabric:remapJar`. The mod JAR is written to `fabric/build/libs/penetra-fabric-2.0.4.jar`. Fabric Language Kotlin is bundled in the mod JAR, so players do not need to install it separately.
 
 To launch the development client on this machine's Java 27 runtime, use `./gradlew :fabric:runClient -Prun_java_version=27`. A regular installed Minecraft 26.3 client must run Java 25 or newer.
 
@@ -12,4 +12,4 @@ Search runs in small client-tick batches (six chunks per tick), checks section p
 
 The mod compiled and packaged successfully, and the development client launched into a local singleplayer world on Java 27. The chat commands and visible block outlines still need an interactive in-game check.
 
-Additional default hotkeys: hold `C` to zoom and scroll while holding it to change magnification; `Y` KillAura, `U` MultiAura, `[` X-Ray, `]` Freecam, `G` AutoFish, `H` AutoFarm, `J` CameraDistance, `;` AutoAim, and `N` BowAimbot. `$help` displays all Penetra keybinds and commands. Hotkeys use Minecraft's `InputConstants` physical key values for compatibility with the SDL input system in Minecraft 26.3. BowAimbot points at the nearest visible living entity while a bow or crossbow is held; it does not predict projectile travel. These client-side helpers still rely on server-approved interaction packets. AutoFarm currently harvests mature vanilla crops in nearby loaded blocks; it does not automatically replant them.
+All Penetra keyboard shortcuts can be changed in **Options → Controls → Key Binds → Penetra**. Defaults: hold `C` to zoom and scroll while holding it to change magnification; `Y` KillAura, `U` MultiAura, `[` X-Ray, `]` Freecam, `G` AutoFish, `H` AutoFarm, `J` CameraDistance, `;` AutoAim, and `N` BowAimbot. `$help` displays the current key assignments and commands. Freecam movement follows the player's configured movement keys. BowAimbot points at the nearest visible living entity while a bow or crossbow is held; it does not predict projectile travel. These client-side helpers still rely on server-approved interaction packets. AutoFarm currently harvests mature vanilla crops in nearby loaded blocks; it does not automatically replant them.

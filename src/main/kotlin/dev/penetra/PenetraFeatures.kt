@@ -2,6 +2,8 @@ package dev.penetra
 
 import com.mojang.blaze3d.platform.InputConstants
 import net.minecraft.client.Minecraft
+import net.minecraft.client.KeyMapping
+import net.minecraft.client.input.KeyEvent
 import net.minecraft.client.player.LocalPlayer
 import net.minecraft.client.multiplayer.ClientChunkCache
 import net.minecraft.core.BlockPos
@@ -24,15 +26,6 @@ import net.minecraft.world.phys.Vec3
 import java.util.Collections
 
 object PenetraFeatures {
-    private const val KEY_KILLAURA = InputConstants.KEY_Y
-    private const val KEY_MULTIAURA = InputConstants.KEY_U
-    private const val KEY_XRAY = InputConstants.KEY_LBRACKET
-    private const val KEY_FREECAM = InputConstants.KEY_RBRACKET
-    private const val KEY_AUTOFISH = InputConstants.KEY_G
-    private const val KEY_AUTOFARM = InputConstants.KEY_H
-    private const val KEY_CAMERA_DISTANCE = InputConstants.KEY_J
-    private const val KEY_AUTOAIM = InputConstants.KEY_SEMICOLON
-    private const val KEY_BOW_AIMBOT = InputConstants.KEY_N
     private const val MAX_XRAY_BLOCKS = 2048
 
     private var killaura = false
@@ -45,7 +38,9 @@ object PenetraFeatures {
     private var autoaim = false
     private var bowaimbot = false
     private var guiOpen = false
-    private val heldMovementKeys = HashSet<Int>()
+    private enum class FreecamDirection { FORWARD, BACKWARD, LEFT, RIGHT, UP, DOWN }
+
+    private val heldMovementKeys = HashSet<FreecamDirection>()
     private val xrayBlockPositions = ArrayList<BlockPos>()
     private val oreSuffixes = listOf("_ore", "ancient_debris")
     private var currentFreecamOffset = Vec3.ZERO
@@ -60,47 +55,45 @@ object PenetraFeatures {
     private data class ChunkCoordinate(val x: Int, val z: Int)
 
     @JvmStatic
-    fun toggle(key: Int) {
-        val name = when (key) {
-            KEY_KILLAURA -> { killaura = !killaura; "KillAura" }
-            KEY_MULTIAURA -> { multiaura = !multiaura; "MultiAura" }
-            KEY_XRAY -> {
+    fun toggle(feature: PenetraHotkeys.Feature) {
+        val name = when (feature) {
+            PenetraHotkeys.Feature.KILLAURA -> { killaura = !killaura; "KillAura" }
+            PenetraHotkeys.Feature.MULTIAURA -> { multiaura = !multiaura; "MultiAura" }
+            PenetraHotkeys.Feature.XRAY -> {
                 xray = !xray
                 xrayBlockPositions.clear()
                 xrayChunkQueue = emptyList()
                 "X-Ray"
             }
-            KEY_FREECAM -> {
+            PenetraHotkeys.Feature.FREECAM -> {
                 freecam = !freecam
                 currentFreecamOffset = Vec3.ZERO
                 heldMovementKeys.clear()
                 "Freecam"
             }
-            KEY_AUTOFISH -> { autofish = !autofish; fishDelay = 0; "AutoFish" }
-            KEY_AUTOFARM -> { autofarm = !autofarm; farmTarget = null; "AutoFarm" }
-            KEY_CAMERA_DISTANCE -> { cameraDistance = !cameraDistance; "CameraDistance" }
-            KEY_AUTOAIM -> { autoaim = !autoaim; "AutoAim" }
-            KEY_BOW_AIMBOT -> { bowaimbot = !bowaimbot; "BowAimbot" }
-            else -> return
+            PenetraHotkeys.Feature.AUTOFISH -> { autofish = !autofish; fishDelay = 0; "AutoFish" }
+            PenetraHotkeys.Feature.AUTOFARM -> { autofarm = !autofarm; farmTarget = null; "AutoFarm" }
+            PenetraHotkeys.Feature.CAMERA_DISTANCE -> { cameraDistance = !cameraDistance; "CameraDistance" }
+            PenetraHotkeys.Feature.AUTOAIM -> { autoaim = !autoaim; "AutoAim" }
+            PenetraHotkeys.Feature.BOW_AIMBOT -> { bowaimbot = !bowaimbot; "BowAimbot" }
         }
 
         val minecraft = Minecraft.getInstance()
         minecraft.gui.chatListener().handleSystemMessage(
-            Component.literal("[Penetra] $name${if (isEnabled(key)) " ON" else " OFF"}"), false,
+            Component.literal("[Penetra] $name${if (isEnabled(feature)) " ON" else " OFF"}"), false,
         )
     }
 
-    private fun isEnabled(key: Int): Boolean = when (key) {
-        KEY_KILLAURA -> killaura
-        KEY_MULTIAURA -> multiaura
-        KEY_XRAY -> xray
-        KEY_FREECAM -> freecam
-        KEY_AUTOFISH -> autofish
-        KEY_AUTOFARM -> autofarm
-        KEY_CAMERA_DISTANCE -> cameraDistance
-        KEY_AUTOAIM -> autoaim
-        KEY_BOW_AIMBOT -> bowaimbot
-        else -> false
+    private fun isEnabled(feature: PenetraHotkeys.Feature): Boolean = when (feature) {
+        PenetraHotkeys.Feature.KILLAURA -> killaura
+        PenetraHotkeys.Feature.MULTIAURA -> multiaura
+        PenetraHotkeys.Feature.XRAY -> xray
+        PenetraHotkeys.Feature.FREECAM -> freecam
+        PenetraHotkeys.Feature.AUTOFISH -> autofish
+        PenetraHotkeys.Feature.AUTOFARM -> autofarm
+        PenetraHotkeys.Feature.CAMERA_DISTANCE -> cameraDistance
+        PenetraHotkeys.Feature.AUTOAIM -> autoaim
+        PenetraHotkeys.Feature.BOW_AIMBOT -> bowaimbot
     }
 
     @JvmStatic fun freecamEnabled(): Boolean = freecam
@@ -118,20 +111,26 @@ object PenetraFeatures {
     @JvmStatic fun guiOpen(): Boolean = guiOpen
 
     @JvmStatic
-    fun consumeFreecamKey(key: Int, action: Int): Boolean {
-        if (!freecam || Minecraft.getInstance().gui.screen() != null || !isMovementKey(key)) return false
-        when (action) {
-            InputConstants.PRESS -> heldMovementKeys.add(key)
-            InputConstants.RELEASE -> heldMovementKeys.remove(key)
+    fun consumeFreecamKey(event: KeyEvent, action: Int): Boolean {
+        if (!freecam || Minecraft.getInstance().gui.screen() != null) return false
+        val options = Minecraft.getInstance().options
+        var matched = false
+        fun update(mapping: KeyMapping, direction: FreecamDirection) {
+            if (!mapping.matches(event)) return
+            matched = true
+            when (action) {
+                InputConstants.PRESS -> heldMovementKeys.add(direction)
+                InputConstants.RELEASE -> heldMovementKeys.remove(direction)
+            }
         }
-        return true
+        update(options.keyUp, FreecamDirection.FORWARD)
+        update(options.keyDown, FreecamDirection.BACKWARD)
+        update(options.keyLeft, FreecamDirection.LEFT)
+        update(options.keyRight, FreecamDirection.RIGHT)
+        update(options.keyJump, FreecamDirection.UP)
+        update(options.keyShift, FreecamDirection.DOWN)
+        return matched
     }
-
-    private fun isMovementKey(key: Int): Boolean =
-        key == InputConstants.KEY_W || key == InputConstants.KEY_A ||
-            key == InputConstants.KEY_S || key == InputConstants.KEY_D ||
-            key == InputConstants.KEY_SPACE || key == InputConstants.KEY_LSHIFT ||
-            key == InputConstants.KEY_RSHIFT
 
     @JvmStatic
     fun tick() {
@@ -173,14 +172,12 @@ object PenetraFeatures {
         val forward = Vec3(-kotlin.math.sin(yaw), 0.0, kotlin.math.cos(yaw))
         val right = Vec3(kotlin.math.cos(yaw), 0.0, kotlin.math.sin(yaw))
         var delta = Vec3.ZERO
-        if (InputConstants.KEY_W in heldMovementKeys) delta = delta.add(forward)
-        if (InputConstants.KEY_S in heldMovementKeys) delta = delta.subtract(forward)
-        if (InputConstants.KEY_D in heldMovementKeys) delta = delta.add(right)
-        if (InputConstants.KEY_A in heldMovementKeys) delta = delta.subtract(right)
-        if (InputConstants.KEY_SPACE in heldMovementKeys) delta = delta.add(0.0, 1.0, 0.0)
-        if (InputConstants.KEY_LSHIFT in heldMovementKeys || InputConstants.KEY_RSHIFT in heldMovementKeys) {
-            delta = delta.add(0.0, -1.0, 0.0)
-        }
+        if (FreecamDirection.FORWARD in heldMovementKeys) delta = delta.add(forward)
+        if (FreecamDirection.BACKWARD in heldMovementKeys) delta = delta.subtract(forward)
+        if (FreecamDirection.RIGHT in heldMovementKeys) delta = delta.add(right)
+        if (FreecamDirection.LEFT in heldMovementKeys) delta = delta.subtract(right)
+        if (FreecamDirection.UP in heldMovementKeys) delta = delta.add(0.0, 1.0, 0.0)
+        if (FreecamDirection.DOWN in heldMovementKeys) delta = delta.add(0.0, -1.0, 0.0)
         if (delta.lengthSqr() > 0.0) currentFreecamOffset = currentFreecamOffset.add(delta.normalize().scale(0.35))
     }
 

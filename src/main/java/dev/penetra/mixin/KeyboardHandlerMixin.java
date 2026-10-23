@@ -18,16 +18,15 @@ public abstract class KeyboardHandlerMixin {
     private void penetra$handleHotkeys(long window, int action, KeyEvent event, CallbackInfo ci) {
         // Minecraft 26.3 switched to SDL: key() is the physical SDL scancode,
         // while keycode() is the layout-dependent character keycode.
-        int keyCode = event.key();
         if (action != InputConstants.PRESS || Minecraft.getInstance().gui.screen() == null) {
             PenetraZoom.handleKey(event, action);
         }
-        if (PenetraFeatures.consumeFreecamKey(keyCode, action)) {
+        if (PenetraFeatures.consumeFreecamKey(event, action)) {
             ci.cancel();
             return;
         }
         if (action == InputConstants.PRESS && Minecraft.getInstance().gui.screen() == null) {
-            PenetraHotkeys.onKeyPressed(keyCode);
+            PenetraHotkeys.onKeyPressed(event);
         }
     }
 }

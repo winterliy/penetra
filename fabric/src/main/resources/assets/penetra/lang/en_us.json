@@ -1,4 +1,13 @@
 {
   "key.category.penetra.general": "Penetra",
-  "key.penetra.zoom": "Zoom"
+  "key.penetra.zoom": "Zoom",
+  "key.penetra.killaura": "Toggle KillAura",
+  "key.penetra.multiaura": "Toggle MultiAura",
+  "key.penetra.xray": "Toggle X-Ray",
+  "key.penetra.freecam": "Toggle Freecam",
+  "key.penetra.autofish": "Toggle AutoFish",
+  "key.penetra.autofarm": "Toggle AutoFarm",
+  "key.penetra.camera_distance": "Toggle Camera Distance",
+  "key.penetra.autoaim": "Toggle AutoAim",
+  "key.penetra.bow_aimbot": "Toggle Bow Aimbot"
 }

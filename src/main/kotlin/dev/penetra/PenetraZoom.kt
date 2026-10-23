@@ -24,7 +24,7 @@ object PenetraZoom {
             "key.penetra.zoom",
             InputConstants.Type.KEYBOARD,
             InputConstants.KEY_C,
-            KeyMapping.Category.register(net.minecraft.resources.Identifier.fromNamespaceAndPath("penetra", "general"))
+            PenetraHotkeys.CATEGORY
         ).also { zoomKey = it }
     }
 
@@ -43,6 +43,9 @@ object PenetraZoom {
 
     @JvmStatic
     fun isZooming(): Boolean = zoomKeyDown
+
+    @JvmStatic
+    fun getKeyName(): String = getOrCreateKeyMapping().translatedKeyMessage.string
 
     @JvmStatic
     fun releaseKey() {

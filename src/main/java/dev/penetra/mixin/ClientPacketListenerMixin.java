@@ -3,6 +3,8 @@ package dev.penetra.mixin;
 import dev.penetra.BlockFinder;
 import dev.penetra.FindState;
 import dev.penetra.PenetraFeatures;
+import dev.penetra.PenetraHotkeys;
+import dev.penetra.PenetraZoom;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.network.chat.Component;
@@ -74,8 +76,16 @@ public abstract class ClientPacketListenerMixin {
     private static void showHelp() {
         String[] lines = {
                 "[Penetra] 키맵:",
-                "Y KillAura | U MultiAura | [ X-Ray | ] Freecam",
-                "G AutoFish | H AutoFarm | J CameraDistance | ; AutoAim | N BowAimbot",
+                PenetraZoom.getKeyName() + " Zoom | "
+                        + PenetraHotkeys.getKeyName(PenetraHotkeys.Feature.KILLAURA) + " KillAura | "
+                        + PenetraHotkeys.getKeyName(PenetraHotkeys.Feature.MULTIAURA) + " MultiAura",
+                PenetraHotkeys.getKeyName(PenetraHotkeys.Feature.XRAY) + " X-Ray | "
+                        + PenetraHotkeys.getKeyName(PenetraHotkeys.Feature.FREECAM) + " Freecam | "
+                        + PenetraHotkeys.getKeyName(PenetraHotkeys.Feature.AUTOFISH) + " AutoFish | "
+                        + PenetraHotkeys.getKeyName(PenetraHotkeys.Feature.AUTOFARM) + " AutoFarm",
+                PenetraHotkeys.getKeyName(PenetraHotkeys.Feature.CAMERA_DISTANCE) + " CameraDistance | "
+                        + PenetraHotkeys.getKeyName(PenetraHotkeys.Feature.AUTOAIM) + " AutoAim | "
+                        + PenetraHotkeys.getKeyName(PenetraHotkeys.Feature.BOW_AIMBOT) + " BowAimbot",
                 "[Penetra] 명령어:",
                 "$find <block_id> — 블록 찾기 및 아웃라인 표시",
                 "$find clear — 검색 결과 및 아웃라인 지우기",

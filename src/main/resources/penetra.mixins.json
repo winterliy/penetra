@@ -4,8 +4,7 @@
   "compatibilityLevel": "JAVA_17",
   "client": [
     "ClientPacketListenerMixin",
-    "ChatScreenMixin",
-    "ClientSuggestionProviderMixin",
+    "CommandSuggestionsMixin",
     "ClientLevelMixin",
     "KeyboardHandlerMixin",
     "MouseHandlerMixin",

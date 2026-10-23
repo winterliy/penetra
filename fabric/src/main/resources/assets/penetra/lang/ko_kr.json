@@ -1,4 +1,13 @@
 {
   "key.category.penetra.general": "Penetra",
-  "key.penetra.zoom": "확대"
+  "key.penetra.zoom": "확대",
+  "key.penetra.killaura": "킬 오라 전환",
+  "key.penetra.multiaura": "멀티 오라 전환",
+  "key.penetra.xray": "엑스레이 전환",
+  "key.penetra.freecam": "자유 시점 전환",
+  "key.penetra.autofish": "자동 낚시 전환",
+  "key.penetra.autofarm": "자동 농사 전환",
+  "key.penetra.camera_distance": "카메라 거리 전환",
+  "key.penetra.autoaim": "자동 조준 전환",
+  "key.penetra.bow_aimbot": "활 조준 전환"
 }
