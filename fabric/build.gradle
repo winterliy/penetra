@@ -15,13 +15,17 @@ tasks.configureEach {
 
 configurations {
     common
+    nestedMods {
+        transitive = false
+    }
     compileClasspath.extendsFrom common
     runtimeClasspath.extendsFrom common
+    implementation.extendsFrom nestedMods
 }
 
 dependencies {
     common project(path: ':', configuration: 'default')
-    implementation 'net.fabricmc:fabric-language-kotlin:1.14.2+kotlin.2.4.21'
+    nestedMods 'net.fabricmc:fabric-language-kotlin:1.14.2+kotlin.2.4.21'
 }
 
 processResources {
@@ -31,6 +35,10 @@ processResources {
 
 jar {
     from rootProject.sourceSets.main.output
+    from(configurations.nestedMods) {
+        into 'META-INF/jars'
+        rename { 'fabric-language-kotlin.jar' }
+    }
     archiveClassifier.set 'dev'
 }
 

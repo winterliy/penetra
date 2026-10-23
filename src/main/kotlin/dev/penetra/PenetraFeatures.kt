@@ -1,5 +1,6 @@
 package dev.penetra
 
+import com.mojang.blaze3d.platform.InputConstants
 import net.minecraft.client.Minecraft
 import net.minecraft.client.player.LocalPlayer
 import net.minecraft.client.multiplayer.ClientChunkCache
@@ -23,15 +24,15 @@ import net.minecraft.world.phys.Vec3
 import java.util.Collections
 
 object PenetraFeatures {
-    private const val KEY_KILLAURA = 89
-    private const val KEY_MULTIAURA = 85
-    private const val KEY_XRAY = 91
-    private const val KEY_FREECAM = 93
-    private const val KEY_AUTOFISH = 71
-    private const val KEY_AUTOFARM = 72
-    private const val KEY_CAMERA_DISTANCE = 74
-    private const val KEY_AUTOAIM = 59
-    private const val KEY_BOW_AIMBOT = 78
+    private const val KEY_KILLAURA = InputConstants.KEY_Y
+    private const val KEY_MULTIAURA = InputConstants.KEY_U
+    private const val KEY_XRAY = InputConstants.KEY_LBRACKET
+    private const val KEY_FREECAM = InputConstants.KEY_RBRACKET
+    private const val KEY_AUTOFISH = InputConstants.KEY_G
+    private const val KEY_AUTOFARM = InputConstants.KEY_H
+    private const val KEY_CAMERA_DISTANCE = InputConstants.KEY_J
+    private const val KEY_AUTOAIM = InputConstants.KEY_SEMICOLON
+    private const val KEY_BOW_AIMBOT = InputConstants.KEY_N
     private const val MAX_XRAY_BLOCKS = 2048
 
     private var killaura = false
@@ -120,14 +121,17 @@ object PenetraFeatures {
     fun consumeFreecamKey(key: Int, action: Int): Boolean {
         if (!freecam || Minecraft.getInstance().gui.screen() != null || !isMovementKey(key)) return false
         when (action) {
-            1 -> heldMovementKeys.add(key)
-            0 -> heldMovementKeys.remove(key)
+            InputConstants.PRESS -> heldMovementKeys.add(key)
+            InputConstants.RELEASE -> heldMovementKeys.remove(key)
         }
         return true
     }
 
     private fun isMovementKey(key: Int): Boolean =
-        key == 87 || key == 65 || key == 83 || key == 68 || key == 32 || key == 340 || key == 344
+        key == InputConstants.KEY_W || key == InputConstants.KEY_A ||
+            key == InputConstants.KEY_S || key == InputConstants.KEY_D ||
+            key == InputConstants.KEY_SPACE || key == InputConstants.KEY_LSHIFT ||
+            key == InputConstants.KEY_RSHIFT
 
     @JvmStatic
     fun tick() {

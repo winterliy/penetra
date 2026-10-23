@@ -15,6 +15,11 @@
   },
   "license": "MIT",
   "mixins": ["penetra.mixins.json"],
+  "jars": [
+    {
+      "file": "META-INF/jars/fabric-language-kotlin.jar"
+    }
+  ],
   "depends": {
     "fabricloader": ">=0.19.5",
     "minecraft": "~26.3",
