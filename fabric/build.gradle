@@ -21,6 +21,7 @@ configurations {
 
 dependencies {
     common project(path: ':', configuration: 'default')
+    implementation 'net.fabricmc:fabric-language-kotlin:1.14.2+kotlin.2.4.21'
 }
 
 processResources {

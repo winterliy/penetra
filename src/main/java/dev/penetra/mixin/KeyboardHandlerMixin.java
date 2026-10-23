@@ -1,6 +1,7 @@
 package dev.penetra.mixin;
 
 import dev.penetra.PenetraFeatures;
+import dev.penetra.PenetraHotkeys;
 import net.minecraft.client.KeyboardHandler;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.input.KeyEvent;
@@ -13,10 +14,11 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public abstract class KeyboardHandlerMixin {
     @Inject(method = "keyPress(JILnet/minecraft/client/input/KeyEvent;)V", at = @At("HEAD"), cancellable = true)
     private void penetra$handleHotkeys(long window, int action, KeyEvent event, CallbackInfo ci) {
-        if (PenetraFeatures.consumeFreecamKey(event.key(), action)) {
+        int keyCode = event.keycode();
+        if (PenetraFeatures.consumeFreecamKey(keyCode, action)) {
             ci.cancel();
             return;
         }
-        if (action == 1 && !PenetraFeatures.guiOpen()) PenetraFeatures.toggle(event.key());
+        if (action == 1 && Minecraft.getInstance().gui.screen() == null) PenetraHotkeys.onKeyPressed(keyCode);
     }
 }

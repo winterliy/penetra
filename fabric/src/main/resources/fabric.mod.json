@@ -6,13 +6,19 @@
   "description": "Search for blocks in already-loaded client chunks.",
   "environment": "client",
   "entrypoints": {
-    "client": ["dev.penetra.PenetraClient"]
+    "client": [
+      {
+        "adapter": "kotlin",
+        "value": "dev.penetra.PenetraClient"
+      }
+    ]
   },
   "license": "MIT",
   "mixins": ["penetra.mixins.json"],
   "depends": {
     "fabricloader": ">=0.19.5",
     "minecraft": "~26.3",
-    "java": ">=25"
+    "java": ">=25",
+    "fabric-language-kotlin": ">=1.14.2+kotlin.2.4.21"
   }
 }

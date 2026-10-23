@@ -78,7 +78,7 @@ public final class PenetraFeatures {
     public static boolean guiOpen() { return guiOpen; }
 
     public static boolean consumeFreecamKey(int key, int action) {
-        if (!freecam || guiOpen || !isMovementKey(key)) return false;
+        if (!freecam || Minecraft.getInstance().gui.screen() != null || !isMovementKey(key)) return false;
         if (action == 1) heldMovementKeys.add(key);
         else if (action == 0) heldMovementKeys.remove(key);
         return true;
