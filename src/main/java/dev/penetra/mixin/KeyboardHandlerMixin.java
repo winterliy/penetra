@@ -19,7 +19,9 @@ public abstract class KeyboardHandlerMixin {
         // Minecraft 26.3 switched to SDL: key() is the physical SDL scancode,
         // while keycode() is the layout-dependent character keycode.
         int keyCode = event.key();
-        PenetraZoom.handleKey(keyCode, action);
+        if (action != InputConstants.PRESS || Minecraft.getInstance().gui.screen() == null) {
+            PenetraZoom.handleKey(event, action);
+        }
         if (PenetraFeatures.consumeFreecamKey(keyCode, action)) {
             ci.cancel();
             return;

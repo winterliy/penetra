@@ -5,11 +5,13 @@
   "client": [
     "ClientPacketListenerMixin",
     "ChatScreenMixin",
+    "ClientSuggestionProviderMixin",
     "ClientLevelMixin",
     "KeyboardHandlerMixin",
     "MouseHandlerMixin",
     "CameraRenderStateMixin",
     "MinecraftMixin",
+    "OptionsMixin",
     "LevelRendererMixin",
     "RenderPipelinesMixin",
     "RenderTypeMixin"

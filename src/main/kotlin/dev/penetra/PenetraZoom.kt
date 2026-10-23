@@ -1,9 +1,11 @@
 package dev.penetra
 
+import net.minecraft.client.KeyMapping
+import net.minecraft.client.input.KeyEvent
 import com.mojang.blaze3d.platform.InputConstants
 import kotlin.math.pow
 
-/** Hold-C zoom with a scroll-adjustable magnification. */
+/** Hold-to-zoom with a scroll-adjustable magnification. */
 object PenetraZoom {
     private const val MIN_ZOOM = 1.0
     private const val MAX_ZOOM = 32.0
@@ -13,12 +15,28 @@ object PenetraZoom {
     private var zoomKeyDown = false
     @Volatile
     private var zoomFactor = 4.0
+    @Volatile
+    private var zoomKey: KeyMapping? = null
 
     @JvmStatic
-    fun handleKey(key: Int, action: Int) {
-        if (key != InputConstants.KEY_C) return
+    fun getOrCreateKeyMapping(): KeyMapping = zoomKey ?: synchronized(this) {
+        zoomKey ?: KeyMapping(
+            "key.penetra.zoom",
+            InputConstants.Type.KEYBOARD,
+            InputConstants.KEY_C,
+            KeyMapping.Category.register(net.minecraft.resources.Identifier.fromNamespaceAndPath("penetra", "general"))
+        ).also { zoomKey = it }
+    }
+
+    @JvmStatic
+    fun handleKey(event: KeyEvent, action: Int) {
+        val mapping = zoomKey ?: return
+        if (!mapping.matches(event)) return
         when (action) {
-            InputConstants.PRESS -> zoomKeyDown = true
+            InputConstants.PRESS -> if (!zoomKeyDown) {
+                zoomFactor = 4.0
+                zoomKeyDown = true
+            }
             InputConstants.RELEASE -> zoomKeyDown = false
         }
     }

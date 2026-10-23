@@ -52,8 +52,9 @@ public final class PenetraRenderer {
 
     public static void render(CameraRenderState cameraState) {
         Minecraft minecraft = Minecraft.getInstance();
-        if (minecraft.level == null || !FindState.outlinesEnabled()) return;
-        boolean hasFindMarkers = FindState.belongsTo(minecraft.level) && !FindState.positions().isEmpty();
+        if (minecraft.level == null || minecraft.player == null) return;
+        boolean hasFindMarkers = FindState.outlinesEnabled()
+                && FindState.belongsTo(minecraft.level) && !FindState.positions().isEmpty();
         boolean hasXrayMarkers = !PenetraFeatures.xrayBlocks().isEmpty();
         if (!hasFindMarkers && !hasXrayMarkers) return;
 

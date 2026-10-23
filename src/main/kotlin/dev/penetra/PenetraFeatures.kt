@@ -173,12 +173,14 @@ object PenetraFeatures {
         val forward = Vec3(-kotlin.math.sin(yaw), 0.0, kotlin.math.cos(yaw))
         val right = Vec3(kotlin.math.cos(yaw), 0.0, kotlin.math.sin(yaw))
         var delta = Vec3.ZERO
-        if (87 in heldMovementKeys) delta = delta.add(forward)
-        if (83 in heldMovementKeys) delta = delta.subtract(forward)
-        if (68 in heldMovementKeys) delta = delta.add(right)
-        if (65 in heldMovementKeys) delta = delta.subtract(right)
-        if (32 in heldMovementKeys) delta = delta.add(0.0, 1.0, 0.0)
-        if (340 in heldMovementKeys || 344 in heldMovementKeys) delta = delta.add(0.0, -1.0, 0.0)
+        if (InputConstants.KEY_W in heldMovementKeys) delta = delta.add(forward)
+        if (InputConstants.KEY_S in heldMovementKeys) delta = delta.subtract(forward)
+        if (InputConstants.KEY_D in heldMovementKeys) delta = delta.add(right)
+        if (InputConstants.KEY_A in heldMovementKeys) delta = delta.subtract(right)
+        if (InputConstants.KEY_SPACE in heldMovementKeys) delta = delta.add(0.0, 1.0, 0.0)
+        if (InputConstants.KEY_LSHIFT in heldMovementKeys || InputConstants.KEY_RSHIFT in heldMovementKeys) {
+            delta = delta.add(0.0, -1.0, 0.0)
+        }
         if (delta.lengthSqr() > 0.0) currentFreecamOffset = currentFreecamOffset.add(delta.normalize().scale(0.35))
     }
 
