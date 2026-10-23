@@ -13,17 +13,9 @@
     "CameraRenderStateMixin",
     "MinecraftMixin",
     "OptionsMixin",
-    "LevelRendererMixin",
     "RenderPipelinesMixin",
     "RenderTypeMixin",
-    "XrayBlockStateMixin",
-    "XrayBlockEntityRenderDispatcherMixin",
-    "XrayFluidRendererMixin",
-    "XrayModelBlockRendererMixin",
-    "XrayVisGraphMixin",
-    "XraySodiumBlockRendererMixin",
-    "XraySodiumBlockRenderContextMixin",
-    "XraySodiumFluidRendererMixin"
+    "LevelRendererMixin"
   ],
   "injectors": { "defaultRequire": 1 }
 }

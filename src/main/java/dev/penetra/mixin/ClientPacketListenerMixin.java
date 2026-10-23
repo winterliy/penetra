@@ -79,8 +79,7 @@ public abstract class ClientPacketListenerMixin {
                 PenetraZoom.getKeyName() + " Zoom | "
                         + PenetraHotkeys.getKeyName(PenetraHotkeys.Feature.KILLAURA) + " KillAura | "
                         + PenetraHotkeys.getKeyName(PenetraHotkeys.Feature.MULTIAURA) + " MultiAura",
-                PenetraHotkeys.getKeyName(PenetraHotkeys.Feature.XRAY) + " X-Ray | "
-                        + PenetraHotkeys.getKeyName(PenetraHotkeys.Feature.FREECAM) + " Freecam | "
+                PenetraHotkeys.getKeyName(PenetraHotkeys.Feature.FREECAM) + " Freecam | "
                         + PenetraHotkeys.getKeyName(PenetraHotkeys.Feature.AUTOFISH) + " AutoFish | "
                         + PenetraHotkeys.getKeyName(PenetraHotkeys.Feature.AUTOFARM) + " AutoFarm",
                 PenetraHotkeys.getKeyName(PenetraHotkeys.Feature.CAMERA_DISTANCE) + " CameraDistance | "

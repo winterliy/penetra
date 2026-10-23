@@ -7,7 +7,6 @@ import net.minecraft.client.input.KeyEvent
 import net.minecraft.client.player.LocalPlayer
 import net.minecraft.core.BlockPos
 import net.minecraft.core.Direction
-import net.minecraft.core.registries.BuiltInRegistries
 import net.minecraft.world.InteractionHand
 import net.minecraft.world.entity.Entity
 import net.minecraft.world.entity.LivingEntity
@@ -17,35 +16,17 @@ import net.minecraft.world.item.BowItem
 import net.minecraft.world.item.CrossbowItem
 import net.minecraft.world.item.Items
 import net.minecraft.world.level.block.CropBlock
-import net.minecraft.world.level.block.state.BlockState
 import net.minecraft.world.phys.Vec3
 
 object PenetraFeatures {
     private const val NOTICE_DURATION_NANOS = 2_000_000_000L
 
-    private val xrayBlocks = setOf(
-        "amethyst_cluster", "ancient_debris", "anvil", "beacon", "bone_block", "bookshelf",
-        "brewing_stand", "budding_amethyst", "chain_command_block", "chest", "coal_block",
-        "coal_ore", "command_block", "copper_ore", "crafter", "crafting_table", "creaking_heart",
-        "decorated_pot", "deepslate_coal_ore", "deepslate_copper_ore", "deepslate_diamond_ore",
-        "deepslate_emerald_ore", "deepslate_gold_ore", "deepslate_iron_ore", "deepslate_lapis_ore",
-        "deepslate_redstone_ore", "diamond_block", "diamond_ore", "dispenser", "dropper",
-        "emerald_block", "emerald_ore", "enchanting_table", "end_portal", "end_portal_frame",
-        "ender_chest", "furnace", "glowstone", "gold_block", "gold_ore", "hopper", "iron_block",
-        "iron_ore", "ladder", "lapis_block", "lapis_ore", "lava", "lodestone", "mossy_cobblestone",
-        "nether_gold_ore", "nether_portal", "nether_quartz_ore", "raw_copper_block", "raw_gold_block",
-        "raw_iron_block", "redstone_block", "redstone_ore", "repeating_command_block",
-        "sculk_catalyst", "sculk_sensor", "sculk_shrieker", "spawner", "suspicious_gravel",
-        "suspicious_sand", "tnt", "torch", "trapped_chest", "trial_spawner", "vault", "wall_torch",
-        "water",
-    )
-
     private var killaura = false
     private var multiaura = false
-    @Volatile private var xray = false
     private var autofish = false
     private var autofarm = false
     private var cameraDistance = false
+    private var cameraDistanceValue = 24.0F
     private var autoaim = false
     private var bowaimbot = false
     private var guiOpen = false
@@ -72,10 +53,6 @@ object PenetraFeatures {
         val name = when (feature) {
             PenetraHotkeys.Feature.KILLAURA -> { killaura = !killaura; "KillAura" }
             PenetraHotkeys.Feature.MULTIAURA -> { multiaura = !multiaura; "MultiAura" }
-            PenetraHotkeys.Feature.XRAY -> {
-                xray = !xray
-                "X-Ray"
-            }
             PenetraHotkeys.Feature.FREECAM -> {
                 freecam = !freecam
                 heldMovementKeys.clear()
@@ -84,20 +61,22 @@ object PenetraFeatures {
             }
             PenetraHotkeys.Feature.AUTOFISH -> { autofish = !autofish; fishDelay = 0; "AutoFish" }
             PenetraHotkeys.Feature.AUTOFARM -> { autofarm = !autofarm; farmTarget = null; "AutoFarm" }
-            PenetraHotkeys.Feature.CAMERA_DISTANCE -> { cameraDistance = !cameraDistance; "CameraDistance" }
+            PenetraHotkeys.Feature.CAMERA_DISTANCE -> {
+                cameraDistance = !cameraDistance
+                cameraDistanceValue = 24.0F
+                "CameraDistance"
+            }
             PenetraHotkeys.Feature.AUTOAIM -> { autoaim = !autoaim; "AutoAim" }
             PenetraHotkeys.Feature.BOW_AIMBOT -> { bowaimbot = !bowaimbot; "BowAimbot" }
         }
 
         val enabled = isEnabled(feature)
         showShortcutNotice(name, enabled)
-        if (feature == PenetraHotkeys.Feature.XRAY) refreshXrayRendering()
     }
 
     private fun isEnabled(feature: PenetraHotkeys.Feature): Boolean = when (feature) {
         PenetraHotkeys.Feature.KILLAURA -> killaura
         PenetraHotkeys.Feature.MULTIAURA -> multiaura
-        PenetraHotkeys.Feature.XRAY -> xray
         PenetraHotkeys.Feature.FREECAM -> freecam
         PenetraHotkeys.Feature.AUTOFISH -> autofish
         PenetraHotkeys.Feature.AUTOFARM -> autofarm
@@ -121,29 +100,17 @@ object PenetraFeatures {
         return shortcutNotices.toList()
     }
 
-    private fun refreshXrayRendering() {
-        val minecraft = Minecraft.getInstance()
-        val level = minecraft.level ?: return
-        minecraft.levelRenderer.clearVisibleSections()
-        minecraft.levelRenderer.invalidateCompiledGeometry(
-            level, minecraft.options, minecraft.gameRenderer.mainCamera(), minecraft.getBlockColors(),
-        )
-    }
-
     @JvmStatic fun freecamEnabled(): Boolean = freecam
     @JvmStatic fun cameraDistanceEnabled(): Boolean = cameraDistance
+    @JvmStatic fun cameraDistanceValue(): Float = cameraDistanceValue
+    @JvmStatic fun adjustCameraDistance(amount: Double) {
+        if (!amount.isFinite() || amount == 0.0) return
+        cameraDistanceValue = (cameraDistanceValue - amount.toFloat()).coerceIn(4.0F, 24.0F)
+    }
     @JvmStatic fun freecamPosition(partialTick: Float): Vec3 =
         previousFreecamPosition.lerp(freecamPosition, partialTick.toDouble())
     @JvmStatic fun freecamYaw(): Float = freecamYaw
     @JvmStatic fun freecamPitch(): Float = freecamPitch
-    @JvmStatic fun xrayEnabled(): Boolean = xray
-    @JvmStatic fun isXrayTarget(state: BlockState): Boolean =
-        BuiltInRegistries.BLOCK.getKey(state.block).let { it.namespace == "minecraft" && it.path in xrayBlocks }
-    @JvmStatic fun shouldHideXrayBlockEntity(pos: BlockPos): Boolean {
-        val level = Minecraft.getInstance().level ?: return false
-        return xray && !isXrayTarget(level.getBlockState(pos))
-    }
-
     @JvmStatic
     fun setGuiOpen(open: Boolean) {
         guiOpen = open
@@ -172,7 +139,8 @@ object PenetraFeatures {
         freecamPitch = (freecamPitch + deltaPitch * 0.15).toFloat().coerceIn(-90.0F, 90.0F)
     }
 
-    @JvmStatic fun freecamControlsScroll(): Boolean = freecam && !guiOpen && !PenetraZoom.isZooming()
+    @JvmStatic fun freecamControlsScroll(): Boolean =
+        freecam && !guiOpen && !PenetraZoom.isZooming() && !cameraDistance
 
     @JvmStatic
     fun adjustFreecamSpeed(amount: Double) {

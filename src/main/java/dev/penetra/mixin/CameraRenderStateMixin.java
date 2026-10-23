@@ -44,6 +44,8 @@ public abstract class CameraRenderStateMixin {
 
     @Inject(method = "getMaxZoom(F)F", at = @At("RETURN"), cancellable = true)
     private void penetra$extendCameraDistance(float desiredDistance, org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable<Float> cir) {
-        if (PenetraFeatures.cameraDistanceEnabled()) cir.setReturnValue(Math.max(cir.getReturnValue(), 24.0F));
+        if (PenetraFeatures.cameraDistanceEnabled()) {
+            cir.setReturnValue(Math.max(cir.getReturnValue(), PenetraFeatures.cameraDistanceValue()));
+        }
     }
 }

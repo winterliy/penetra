@@ -64,5 +64,7 @@ object PenetraZoom {
 
     @JvmStatic
     fun applyToFov(fov: Float): Float =
-        if (zoomKeyDown) (fov / zoomFactor.toFloat()).coerceAtLeast(1.0F) else fov
+        if (zoomKeyDown)
+            (fov / zoomFactor.toFloat()).coerceAtLeast(1.0F)
+        else fov
 }

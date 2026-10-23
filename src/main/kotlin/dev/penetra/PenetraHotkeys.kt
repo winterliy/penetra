@@ -14,7 +14,6 @@ object PenetraHotkeys {
     enum class Feature {
         KILLAURA,
         MULTIAURA,
-        XRAY,
         FREECAM,
         AUTOFISH,
         AUTOFARM,
@@ -26,7 +25,6 @@ object PenetraHotkeys {
     private val featureMappings: Map<Feature, KeyMapping> = linkedMapOf(
         Feature.KILLAURA to mapping("key.penetra.killaura", InputConstants.KEY_Y),
         Feature.MULTIAURA to mapping("key.penetra.multiaura", InputConstants.KEY_U),
-        Feature.XRAY to mapping("key.penetra.xray", InputConstants.KEY_LBRACKET),
         Feature.FREECAM to mapping("key.penetra.freecam", InputConstants.KEY_RBRACKET),
         Feature.AUTOFISH to mapping("key.penetra.autofish", InputConstants.KEY_G),
         Feature.AUTOFARM to mapping("key.penetra.autofarm", InputConstants.KEY_H),

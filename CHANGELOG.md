@@ -1,5 +1,14 @@
 # Changelog
 
+## [2.2.1] - 2026-10-24
+
+### Changed
+- Adjust third-person camera distance with the mouse wheel while CameraDistance is enabled, and reset it when toggled.
+- Keep `$find` outlines visible through walls.
+
+### Removed
+- Remove the bracket-key X-Ray toggle and its block and fluid rendering hooks.
+
 ## [2.2.0] - 2026-10-24
 
 ### Added

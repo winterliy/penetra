@@ -26,7 +26,10 @@ public abstract class MouseHandlerMixin {
     @Inject(method = "onScroll(JDD)V", at = @At("HEAD"), cancellable = true)
     private void penetra$adjustZoom(long window, double horizontal, double vertical, CallbackInfo ci) {
         if (vertical == 0.0 || Minecraft.getInstance().gui.screen() != null) return;
-        if (PenetraZoom.isZooming()) {
+        if (PenetraFeatures.cameraDistanceEnabled()) {
+            PenetraFeatures.adjustCameraDistance(vertical);
+            ci.cancel();
+        } else if (PenetraZoom.isZooming()) {
             PenetraZoom.adjustFromScroll(vertical);
             ci.cancel();
         } else if (PenetraFeatures.freecamControlsScroll()) {
