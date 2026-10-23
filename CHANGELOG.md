@@ -1,5 +1,10 @@
 # Changelog
 
+## [2.1.2] - 2026-10-24
+
+### Changed
+- Name the root compile library `penetra-common` so it cannot be confused with the installable Fabric mod JAR.
+
 ## [2.1.1] - 2026-10-24
 
 ### Fixed

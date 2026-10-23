@@ -42,6 +42,10 @@ allprojects {
     configurations.compileOnly.extendsFrom(configurations.minecraft, configurations.minecraftLibraries)
 }
 
+tasks.named('jar') {
+    archiveBaseName.set('penetra-common')
+}
+
 dependencies {
     compileOnly "org.spongepowered:mixin:${mixin_version}"
     compileOnly "org.ow2.asm:asm:${asm_version}"
