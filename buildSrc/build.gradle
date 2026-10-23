@@ -1,3 +1,7 @@
+plugins {
+    id 'java-library'
+}
+
 repositories {
     mavenLocal()
     maven { url = 'https://maven.wagyourtail.xyz/releases' }

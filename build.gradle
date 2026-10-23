@@ -35,11 +35,19 @@ allprojects {
         version rootProject.minecraft_version
         mappings { mojmap() }
     }
+
+    // Unimined adds Minecraft and its libraries to compiler task classpaths,
+    // but not to Gradle's dependency model. Expose them so Java IDE importers
+    // (including VS Code's Java language server) receive the same classpath.
+    configurations.compileOnly.extendsFrom(configurations.minecraft, configurations.minecraftLibraries)
 }
 
 dependencies {
     compileOnly "org.spongepowered:mixin:${mixin_version}"
     compileOnly "org.ow2.asm:asm:${asm_version}"
+    // Java sources call Kotlin declarations, so expose Kotlin's output to
+    // Java IDE classpath models as well as to Gradle's compileJava task.
+    compileOnly files(layout.buildDirectory.dir('classes/kotlin/main'))
 }
 
 unimined.minecraft {
