@@ -8,6 +8,7 @@
     "HudShortcutNoticeMixin",
     "ClientLevelMixin",
     "KeyboardHandlerMixin",
+    "LocalPlayerPickMixin",
     "MouseHandlerMixin",
     "CameraRenderStateMixin",
     "MinecraftMixin",
@@ -19,7 +20,10 @@
     "XrayBlockEntityRenderDispatcherMixin",
     "XrayFluidRendererMixin",
     "XrayModelBlockRendererMixin",
-    "XrayVisGraphMixin"
+    "XrayVisGraphMixin",
+    "XraySodiumBlockRendererMixin",
+    "XraySodiumBlockRenderContextMixin",
+    "XraySodiumFluidRendererMixin"
   ],
   "injectors": { "defaultRequire": 1 }
 }

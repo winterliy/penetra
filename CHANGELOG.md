@@ -1,5 +1,14 @@
 # Changelog
 
+## [2.2.0] - 2026-10-24
+
+### Added
+- Use the Freecam camera position and view direction for block and entity targeting.
+- Filter non-target blocks and fluids in Sodium's chunk renderer while X-Ray is enabled.
+
+### Changed
+- Let KillAura and MultiAura send attacks every client tick against hostile targets within six blocks.
+
 ## [2.1.2] - 2026-10-24
 
 ### Changed

@@ -220,12 +220,11 @@ object PenetraFeatures {
             previousFreecamPosition = freecamPosition
         }
         if (attackDelay > 0) attackDelay--
-        if ((killaura || multiaura) && attackDelay == 0 && player.getAttackStrengthScale(0.0F) >= 0.9F) {
-            val targets = targets(player, 3.5)
+        if (killaura || multiaura) {
+            val targets = targets(player, 6.0)
             if (targets.isNotEmpty()) {
                 val count = if (multiaura) targets.size else 1
                 repeat(count) { gameMode.attack(player, targets[it]) }
-                attackDelay = if (multiaura) 8 else 1
             }
         }
 
