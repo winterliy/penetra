@@ -36,8 +36,12 @@ object PenetraZoom {
             InputConstants.PRESS -> if (!zoomKeyDown) {
                 zoomFactor = 4.0
                 zoomKeyDown = true
+                PenetraFeatures.showShortcutNotice("Zoom", true)
             }
-            InputConstants.RELEASE -> zoomKeyDown = false
+            InputConstants.RELEASE -> if (zoomKeyDown) {
+                zoomKeyDown = false
+                PenetraFeatures.showShortcutNotice("Zoom", false)
+            }
         }
     }
 

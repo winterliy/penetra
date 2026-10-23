@@ -5,6 +5,7 @@
   "client": [
     "ClientPacketListenerMixin",
     "CommandSuggestionsMixin",
+    "HudShortcutNoticeMixin",
     "ClientLevelMixin",
     "KeyboardHandlerMixin",
     "MouseHandlerMixin",
@@ -13,7 +14,12 @@
     "OptionsMixin",
     "LevelRendererMixin",
     "RenderPipelinesMixin",
-    "RenderTypeMixin"
+    "RenderTypeMixin",
+    "XrayBlockStateMixin",
+    "XrayBlockEntityRenderDispatcherMixin",
+    "XrayFluidRendererMixin",
+    "XrayModelBlockRendererMixin",
+    "XrayVisGraphMixin"
   ],
   "injectors": { "defaultRequire": 1 }
 }

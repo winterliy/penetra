@@ -5,11 +5,9 @@ import net.minecraft.client.Minecraft
 import net.minecraft.client.KeyMapping
 import net.minecraft.client.input.KeyEvent
 import net.minecraft.client.player.LocalPlayer
-import net.minecraft.client.multiplayer.ClientChunkCache
 import net.minecraft.core.BlockPos
 import net.minecraft.core.Direction
 import net.minecraft.core.registries.BuiltInRegistries
-import net.minecraft.network.chat.Component
 import net.minecraft.world.InteractionHand
 import net.minecraft.world.entity.Entity
 import net.minecraft.world.entity.LivingEntity
@@ -19,40 +17,54 @@ import net.minecraft.world.item.CrossbowItem
 import net.minecraft.world.item.Items
 import net.minecraft.world.level.block.CropBlock
 import net.minecraft.world.level.block.state.BlockState
-import net.minecraft.world.level.chunk.LevelChunk
-import net.minecraft.world.level.chunk.LevelChunkSection
-import net.minecraft.world.level.chunk.status.ChunkStatus
 import net.minecraft.world.phys.Vec3
-import java.util.Collections
 
 object PenetraFeatures {
-    private const val MAX_XRAY_BLOCKS = 2048
+    private const val NOTICE_DURATION_NANOS = 2_000_000_000L
+
+    private val xrayBlocks = setOf(
+        "amethyst_cluster", "ancient_debris", "anvil", "beacon", "bone_block", "bookshelf",
+        "brewing_stand", "budding_amethyst", "chain_command_block", "chest", "coal_block",
+        "coal_ore", "command_block", "copper_ore", "crafter", "crafting_table", "creaking_heart",
+        "decorated_pot", "deepslate_coal_ore", "deepslate_copper_ore", "deepslate_diamond_ore",
+        "deepslate_emerald_ore", "deepslate_gold_ore", "deepslate_iron_ore", "deepslate_lapis_ore",
+        "deepslate_redstone_ore", "diamond_block", "diamond_ore", "dispenser", "dropper",
+        "emerald_block", "emerald_ore", "enchanting_table", "end_portal", "end_portal_frame",
+        "ender_chest", "furnace", "glowstone", "gold_block", "gold_ore", "hopper", "iron_block",
+        "iron_ore", "ladder", "lapis_block", "lapis_ore", "lava", "lodestone", "mossy_cobblestone",
+        "nether_gold_ore", "nether_portal", "nether_quartz_ore", "raw_copper_block", "raw_gold_block",
+        "raw_iron_block", "redstone_block", "redstone_ore", "repeating_command_block",
+        "sculk_catalyst", "sculk_sensor", "sculk_shrieker", "spawner", "suspicious_gravel",
+        "suspicious_sand", "tnt", "torch", "trapped_chest", "trial_spawner", "vault", "wall_torch",
+        "water",
+    )
 
     private var killaura = false
     private var multiaura = false
-    private var xray = false
-    private var freecam = false
+    @Volatile private var xray = false
     private var autofish = false
     private var autofarm = false
     private var cameraDistance = false
     private var autoaim = false
     private var bowaimbot = false
     private var guiOpen = false
+    @Volatile private var freecam = false
+    private var freecamSpeed = 1.0
+    private var freecamPosition = Vec3.ZERO
+    private var previousFreecamPosition = Vec3.ZERO
+    private var freecamYaw = 0.0F
+    private var freecamPitch = 0.0F
+    private var lastFreecamHealth = Float.NaN
     private enum class FreecamDirection { FORWARD, BACKWARD, LEFT, RIGHT, UP, DOWN }
 
     private val heldMovementKeys = HashSet<FreecamDirection>()
-    private val xrayBlockPositions = ArrayList<BlockPos>()
-    private val oreSuffixes = listOf("_ore", "ancient_debris")
-    private var currentFreecamOffset = Vec3.ZERO
+    private val shortcutNotices = ArrayList<ShortcutNotice>()
     private var attackDelay = 0
     private var fishDelay = 0
     private var farmDelay = 0
-    private var xrayDelay = 0
-    private var xrayChunkIndex = 0
-    private var xrayChunkQueue = emptyList<ChunkCoordinate>()
     private var farmTarget: BlockPos? = null
 
-    private data class ChunkCoordinate(val x: Int, val z: Int)
+    data class ShortcutNotice(val label: String, val enabled: Boolean, val expiresAtNanos: Long)
 
     @JvmStatic
     fun toggle(feature: PenetraHotkeys.Feature) {
@@ -61,14 +73,12 @@ object PenetraFeatures {
             PenetraHotkeys.Feature.MULTIAURA -> { multiaura = !multiaura; "MultiAura" }
             PenetraHotkeys.Feature.XRAY -> {
                 xray = !xray
-                xrayBlockPositions.clear()
-                xrayChunkQueue = emptyList()
                 "X-Ray"
             }
             PenetraHotkeys.Feature.FREECAM -> {
                 freecam = !freecam
-                currentFreecamOffset = Vec3.ZERO
                 heldMovementKeys.clear()
+                if (freecam) startFreecam() else lastFreecamHealth = Float.NaN
                 "Freecam"
             }
             PenetraHotkeys.Feature.AUTOFISH -> { autofish = !autofish; fishDelay = 0; "AutoFish" }
@@ -78,10 +88,9 @@ object PenetraFeatures {
             PenetraHotkeys.Feature.BOW_AIMBOT -> { bowaimbot = !bowaimbot; "BowAimbot" }
         }
 
-        val minecraft = Minecraft.getInstance()
-        minecraft.gui.chatListener().handleSystemMessage(
-            Component.literal("[Penetra] $name${if (isEnabled(feature)) " ON" else " OFF"}"), false,
-        )
+        val enabled = isEnabled(feature)
+        showShortcutNotice(name, enabled)
+        if (feature == PenetraHotkeys.Feature.XRAY) refreshXrayRendering()
     }
 
     private fun isEnabled(feature: PenetraHotkeys.Feature): Boolean = when (feature) {
@@ -96,11 +105,43 @@ object PenetraFeatures {
         PenetraHotkeys.Feature.BOW_AIMBOT -> bowaimbot
     }
 
+    @JvmStatic
+    fun showShortcutNotice(label: String, enabled: Boolean) {
+        val now = System.nanoTime()
+        shortcutNotices.removeIf { it.expiresAtNanos <= now }
+        shortcutNotices += ShortcutNotice(label, enabled, now + NOTICE_DURATION_NANOS)
+        while (shortcutNotices.size > 4) shortcutNotices.removeAt(0)
+    }
+
+    @JvmStatic
+    fun activeShortcutNotices(): List<ShortcutNotice> {
+        val now = System.nanoTime()
+        shortcutNotices.removeIf { it.expiresAtNanos <= now }
+        return shortcutNotices.toList()
+    }
+
+    private fun refreshXrayRendering() {
+        val minecraft = Minecraft.getInstance()
+        val level = minecraft.level ?: return
+        minecraft.levelRenderer.clearVisibleSections()
+        minecraft.levelRenderer.invalidateCompiledGeometry(
+            level, minecraft.options, minecraft.gameRenderer.mainCamera(), minecraft.getBlockColors(),
+        )
+    }
+
     @JvmStatic fun freecamEnabled(): Boolean = freecam
     @JvmStatic fun cameraDistanceEnabled(): Boolean = cameraDistance
-    @JvmStatic fun freecamOffset(): Vec3 = currentFreecamOffset
-    @JvmStatic
-    fun xrayBlocks(): List<BlockPos> = Collections.unmodifiableList(ArrayList(xrayBlockPositions))
+    @JvmStatic fun freecamPosition(partialTick: Float): Vec3 =
+        previousFreecamPosition.lerp(freecamPosition, partialTick.toDouble())
+    @JvmStatic fun freecamYaw(): Float = freecamYaw
+    @JvmStatic fun freecamPitch(): Float = freecamPitch
+    @JvmStatic fun xrayEnabled(): Boolean = xray
+    @JvmStatic fun isXrayTarget(state: BlockState): Boolean =
+        BuiltInRegistries.BLOCK.getKey(state.block).let { it.namespace == "minecraft" && it.path in xrayBlocks }
+    @JvmStatic fun shouldHideXrayBlockEntity(pos: BlockPos): Boolean {
+        val level = Minecraft.getInstance().level ?: return false
+        return xray && !isXrayTarget(level.getBlockState(pos))
+    }
 
     @JvmStatic
     fun setGuiOpen(open: Boolean) {
@@ -109,6 +150,34 @@ object PenetraFeatures {
     }
 
     @JvmStatic fun guiOpen(): Boolean = guiOpen
+
+    private fun startFreecam() {
+        val minecraft = Minecraft.getInstance()
+        val player = minecraft.player ?: return
+        val camera = minecraft.gameRenderer.mainCamera()
+        val position = if (camera.isInitialized) camera.position() else player.eyePosition
+        freecamPosition = position
+        previousFreecamPosition = position
+        freecamYaw = if (camera.isInitialized) camera.yaw() else player.yRot
+        freecamPitch = if (camera.isInitialized) camera.xRot() else player.xRot
+        freecamSpeed = 1.0
+        lastFreecamHealth = player.health
+    }
+
+    @JvmStatic
+    fun turnFreecam(deltaYaw: Double, deltaPitch: Double) {
+        if (!freecam || guiOpen) return
+        freecamYaw += (deltaYaw * 0.15).toFloat()
+        freecamPitch = (freecamPitch + deltaPitch * 0.15).toFloat().coerceIn(-90.0F, 90.0F)
+    }
+
+    @JvmStatic fun freecamControlsScroll(): Boolean = freecam && !guiOpen && !PenetraZoom.isZooming()
+
+    @JvmStatic
+    fun adjustFreecamSpeed(amount: Double) {
+        if (amount > 0) freecamSpeed = (freecamSpeed + 0.05).coerceAtMost(10.0)
+        else if (amount < 0) freecamSpeed = (freecamSpeed - 0.05).coerceAtLeast(0.05)
+    }
 
     @JvmStatic
     fun consumeFreecamKey(event: KeyEvent, action: Int): Boolean {
@@ -139,7 +208,16 @@ object PenetraFeatures {
         val level = minecraft.level ?: return
         val gameMode = minecraft.gameMode ?: return
 
-        if (freecam) moveFreecam(player.yRot)
+        if (freecam && !guiOpen) {
+            if (!lastFreecamHealth.isNaN() && player.health < lastFreecamHealth) {
+                toggle(PenetraHotkeys.Feature.FREECAM)
+            } else {
+                lastFreecamHealth = player.health
+                moveFreecam()
+            }
+        } else if (freecam) {
+            previousFreecamPosition = freecamPosition
+        }
         if (attackDelay > 0) attackDelay--
         if ((killaura || multiaura) && attackDelay == 0 && player.getAttackStrengthScale(0.0F) >= 0.9F) {
             val targets = targets(player, 3.5)
@@ -161,14 +239,10 @@ object PenetraFeatures {
 
         if (autofish) tickFish(minecraft, player)
         if (autofarm) tickFarm(minecraft, player)
-        if (xray && ++xrayDelay >= 4) {
-            xrayDelay = 0
-            tickXray(minecraft, player, level)
-        }
     }
 
-    private fun moveFreecam(yawDegrees: Float) {
-        val yaw = Math.toRadians(yawDegrees.toDouble())
+    private fun moveFreecam() {
+        val yaw = Math.toRadians(freecamYaw.toDouble())
         val forward = Vec3(-kotlin.math.sin(yaw), 0.0, kotlin.math.cos(yaw))
         val right = Vec3(kotlin.math.cos(yaw), 0.0, kotlin.math.sin(yaw))
         var delta = Vec3.ZERO
@@ -178,7 +252,8 @@ object PenetraFeatures {
         if (FreecamDirection.LEFT in heldMovementKeys) delta = delta.subtract(right)
         if (FreecamDirection.UP in heldMovementKeys) delta = delta.add(0.0, 1.0, 0.0)
         if (FreecamDirection.DOWN in heldMovementKeys) delta = delta.add(0.0, -1.0, 0.0)
-        if (delta.lengthSqr() > 0.0) currentFreecamOffset = currentFreecamOffset.add(delta.normalize().scale(0.35))
+        previousFreecamPosition = freecamPosition
+        if (delta.lengthSqr() > 0.0) freecamPosition = freecamPosition.add(delta.normalize().scale(freecamSpeed))
     }
 
     private fun targets(player: LocalPlayer, range: Double): List<LivingEntity> {
@@ -255,53 +330,4 @@ object PenetraFeatures {
         }
     }
 
-    private fun tickXray(minecraft: Minecraft, player: LocalPlayer, level: net.minecraft.client.multiplayer.ClientLevel) {
-        if (xrayChunkQueue.isEmpty() || xrayChunkIndex >= xrayChunkQueue.size) {
-            val centerX = player.blockPosition().x shr 4
-            val centerZ = player.blockPosition().z shr 4
-            val radius = minOf(6, minecraft.options.renderDistance().get())
-            xrayChunkQueue = buildList {
-                for (x in -radius..radius) for (z in -radius..radius) {
-                    add(ChunkCoordinate(centerX + x, centerZ + z))
-                }
-            }
-            xrayChunkIndex = 0
-            xrayBlockPositions.clear()
-        }
-
-        val chunks: ClientChunkCache = level.getChunkSource()
-        repeat(2) {
-            if (xrayChunkIndex >= xrayChunkQueue.size) return@repeat
-            val coordinate = xrayChunkQueue[xrayChunkIndex++]
-            chunks.getChunk(coordinate.x, coordinate.z, ChunkStatus.FULL, false)?.let(::scanOres)
-        }
-    }
-
-    private fun scanOres(chunk: LevelChunk) {
-        val sections = chunk.getSections()
-        for (index in sections.indices) {
-            if (xrayBlockPositions.size >= MAX_XRAY_BLOCKS) break
-            val section: LevelChunkSection = sections[index]
-            if (section.hasOnlyAir()) continue
-            val baseY = chunk.getMinY() + (index shl 4)
-            for (y in 0 until 16) {
-                if (xrayBlockPositions.size >= MAX_XRAY_BLOCKS) break
-                for (x in 0 until 16) {
-                    if (xrayBlockPositions.size >= MAX_XRAY_BLOCKS) break
-                    for (z in 0 until 16) {
-                        if (xrayBlockPositions.size >= MAX_XRAY_BLOCKS) break
-                        val state: BlockState = section.getStates().get(x, y, z)
-                        val path = BuiltInRegistries.BLOCK.getKey(state.block).path
-                        if (oreSuffixes.any(path::endsWith)) {
-                            xrayBlockPositions += BlockPos(
-                                chunk.getPos().getMinBlockX() + x,
-                                baseY + y,
-                                chunk.getPos().getMinBlockZ() + z,
-                            )
-                        }
-                    }
-                }
-            }
-        }
-    }
 }
