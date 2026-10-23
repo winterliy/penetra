@@ -1,5 +1,10 @@
 # Changelog
 
+## [2.1.1] - 2026-10-24
+
+### Fixed
+- Keep KillAura, MultiAura, AutoAim, and BowAimbot from selecting players or non-hostile entities.
+
 ## [2.1.0] - 2026-10-24
 
 ### Added

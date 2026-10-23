@@ -11,6 +11,7 @@ import net.minecraft.core.registries.BuiltInRegistries
 import net.minecraft.world.InteractionHand
 import net.minecraft.world.entity.Entity
 import net.minecraft.world.entity.LivingEntity
+import net.minecraft.world.entity.monster.Enemy
 import net.minecraft.world.entity.projectile.FishingHook
 import net.minecraft.world.item.BowItem
 import net.minecraft.world.item.CrossbowItem
@@ -261,7 +262,9 @@ object PenetraFeatures {
         val level = Minecraft.getInstance().level ?: return emptyList()
         return level.entitiesForRendering()
             .filterIsInstance<LivingEntity>()
-            .filter { it !== player && it.isAlive && !it.isSpectator && player.distanceToSqr(it) <= rangeSqr }
+            .filter {
+                it !== player && it is Enemy && it.isAlive && !it.isSpectator && player.distanceToSqr(it) <= rangeSqr
+            }
             .sortedBy { player.distanceToSqr(it) }
     }
 

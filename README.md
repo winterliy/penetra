@@ -1,10 +1,10 @@
-# Penetra 2.1.0
+# Penetra 2.1.1
 
 Minecraft 26.3 Fabric client mod with Kotlin development enabled alongside the existing Java sources. New client initialization and hotkey routing use Kotlin; mixins remain Java because Fabric's Kotlin guidance does not support Kotlin mixin classes. `$find <namespace:block>` searches already-loaded client chunks inside the configured render-distance square; for example, `$find minecraft:diamond_ore` (the `minecraft:` prefix may be omitted). It does not trigger chunk loads. Matches are capped at 1,024.
 
 The loaded-chunk scanning approach was informed by Baritone 26.3's `WorldScanner`; no Baritone source file is copied into this project. Baritone: https://github.com/cabaletta/baritone (LGPL-3.0-or-later). X-Ray behavior, default target selection, and Freecam behavior are informed by Wurst 7; Penetra's implementations are independently written. Wurst 7: https://github.com/Wurst-Imperium/Wurst7 (GPL-3.0-or-later).
 
-Build with Java 25 or later using `./gradlew :fabric:remapJar`. The mod JAR is written to `fabric/build/libs/penetra-fabric-2.1.0.jar`. Fabric Language Kotlin is bundled in the mod JAR, so players do not need to install it separately.
+Build with Java 25 or later using `./gradlew :fabric:remapJar`. The mod JAR is written to `fabric/build/libs/penetra-fabric-2.1.1.jar`. Fabric Language Kotlin is bundled in the mod JAR, so players do not need to install it separately.
 
 To launch the development client on this machine's Java 27 runtime, use `./gradlew :fabric:runClient -Prun_java_version=27`. A regular installed Minecraft 26.3 client must run Java 25 or newer.
 
