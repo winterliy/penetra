@@ -7,6 +7,7 @@
     "ChatScreenMixin",
     "ClientLevelMixin",
     "KeyboardHandlerMixin",
+    "MouseHandlerMixin",
     "CameraRenderStateMixin",
     "MinecraftMixin",
     "LevelRendererMixin",

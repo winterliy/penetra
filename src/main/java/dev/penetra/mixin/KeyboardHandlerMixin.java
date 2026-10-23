@@ -2,6 +2,7 @@ package dev.penetra.mixin;
 
 import dev.penetra.PenetraFeatures;
 import dev.penetra.PenetraHotkeys;
+import dev.penetra.PenetraZoom;
 import com.mojang.blaze3d.platform.InputConstants;
 import net.minecraft.client.KeyboardHandler;
 import net.minecraft.client.Minecraft;
@@ -18,6 +19,7 @@ public abstract class KeyboardHandlerMixin {
         // Minecraft 26.3 switched to SDL: key() is the physical SDL scancode,
         // while keycode() is the layout-dependent character keycode.
         int keyCode = event.key();
+        PenetraZoom.handleKey(keyCode, action);
         if (PenetraFeatures.consumeFreecamKey(keyCode, action)) {
             ci.cancel();
             return;

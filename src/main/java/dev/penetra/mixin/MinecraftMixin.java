@@ -1,5 +1,6 @@
 package dev.penetra.mixin;
 
+import dev.penetra.PenetraZoom;
 import dev.penetra.PenetraFeatures;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
@@ -13,5 +14,6 @@ public abstract class MinecraftMixin {
     @Inject(method = "setScreenAndShow(Lnet/minecraft/client/gui/screens/Screen;)V", at = @At("HEAD"))
     private void penetra$trackGui(Screen screen, CallbackInfo ci) {
         PenetraFeatures.setGuiOpen(screen != null);
+        if (screen != null) PenetraZoom.releaseKey();
     }
 }
