@@ -6,3 +6,4 @@ fabric/run/
 run/
 .idea/
 *.iml
+bin/
