@@ -1,5 +1,10 @@
 # Changelog
 
+## [2.2.2] - 2026-10-24
+
+### Changed
+- Ignore the `bin/` folders that VS Code's Java extension builds into. No gameplay changes.
+
 ## [2.2.1] - 2026-10-24
 
 ### Changed
