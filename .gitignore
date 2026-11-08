@@ -7,3 +7,7 @@ run/
 .idea/
 *.iml
 bin/
+
+# documentation kept locally only
+*.md
+README*
